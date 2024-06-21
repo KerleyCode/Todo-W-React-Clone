@@ -19,12 +19,13 @@ const Home = () => {
 
   const deleteData = async (todoId) => {
     try {
-      const response = await fetch(`https://playground.4geeks.com/todo/users/KerleyCode/${todoId}`, {
+      const response = await fetch(`https://playground.4geeks.com/todo/todos/${todoId}`, {
         method: 'DELETE',
       });
       if (response.ok) {
-        const data = await response.json();
-        return data;
+        // Remove the deleted todo from the state
+        setTodos(todos.filter((todo) => todo.id !== todoId));
+        return { success: true };
       } else {
         console.error('Error deleting todo:', response.status, response.statusText);
         return { error: { status: response.status, statusText: response.statusText } };
@@ -39,30 +40,29 @@ const Home = () => {
     const result = await deleteData(todoId);
     if (result.error) {
       console.error(`Error deleting todo: ${result.error.status} - ${result.error.statusText}`);
-    } else {
-      // Update the todos state directly
-      setTodos(todos.filter((todo) => todo.id !== todoId));
+    } else if (result.success) {
+      console.log('Todo deleted successfully');
     }
   };
 
-  const handleAddTodo = () => {
-    // Add logic to create a new todo item
-    if (inputValue.trim() !== '') {
-      fetch('https://playground.4geeks.com/todo/users/KerleyCode/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ label: inputValue }),
+ const handleAddTodo = () => {
+  if (inputValue.trim() !== '') {
+    fetch('https://playground.4geeks.com/todo/todos/KerleyCode/', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ label: inputValue }),
+    })
+      .then((response) => response.json())
+      .then((data) => {
+        setTodos([...todos, data]);
+        setInputValue('');
       })
-        .then((response) => response.json())
-        .then((data) => {
-          fetchTodos(); // Refresh the todo list after adding a new one
-          setInputValue('');
-        })
-        .catch((error) => console.error('Error adding todo:', error));
-    }
-  };
+      .catch((error) => console.error('Error adding todo:', error));
+  }
+};
+
 
   return (
     <div className="container">
@@ -93,5 +93,3 @@ const Home = () => {
 };
 
 export default Home;
-
-
